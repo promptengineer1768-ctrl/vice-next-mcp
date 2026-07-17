@@ -1,4 +1,4 @@
-"""Official x64sc/x128 launch, filesystem isolation, and exact-tree cleanup."""
+"""Official VICE launch, filesystem isolation, and exact-tree cleanup."""
 
 from __future__ import annotations
 import asyncio, contextlib, ctypes, hashlib, os, shutil, signal, socket, subprocess, threading, time, uuid
@@ -7,7 +7,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from .monitor import BinaryMonitorTransport
 
-SUPPORTED = {"c64": "x64sc", "c128": "x128"}
+SUPPORTED = {"c64": "x64sc", "c128": "x128", "vic20": "xvic",
+             "plus4": "xplus4", "c16": "xplus4", "pet": "xpet"}
 WRITABLE = {".d64", ".d71", ".d81", ".g64", ".g71", ".p64", ".tap"}
 
 
@@ -166,7 +167,7 @@ class ProcessController:
     @staticmethod
     def validate(machine, executable):
         if machine not in SUPPORTED:
-            raise ValueError("machine must be c64 or c128")
+            raise ValueError("unsupported machine; choose c64, c128, vic20, plus4, c16, or pet")
         executable = Path(executable).resolve(strict=True)
         if executable.stem.lower() != SUPPORTED[machine]:
             raise ValueError(f"{machine} requires {SUPPORTED[machine]}")

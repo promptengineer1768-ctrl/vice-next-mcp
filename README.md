@@ -18,7 +18,8 @@ py -m pip install -e .
 py -m pytest
 ```
 
-Set `VICE_X64SC` to `x64sc.exe` or `VICE_X128` to `x128.exe` from the official
+Set the appropriate VICE executable (`x64sc`, `x128`, `xvic`, `xplus4`, or
+`xpet`) from the official
 SDL2 VICE 3.10 Windows release. `ProcessController.validate()` enforces that
 the executable matches `c64` (`x64sc`) or `c128` (`x128`), and launches the
 binary monitor on an automatically reserved loopback port.
