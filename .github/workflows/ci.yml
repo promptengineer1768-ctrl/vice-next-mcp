@@ -14,3 +14,4 @@ jobs:
       - run: python -m pytest -q
       - run: ruff check src tests
       - run: black --check src tests
+      - run: mypy --explicit-package-bases src/vice_next_mcp
