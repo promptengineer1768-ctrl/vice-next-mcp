@@ -5,6 +5,7 @@ not expose a row/column transition or RESTORE/NMI event.  This probe records
 the attempted calls and their explicit rejection, making that limitation
 machine-readable and regression-testable.
 """
+
 from __future__ import annotations
 
 import json
@@ -16,8 +17,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from vice_next_mcp.supervisor import Supervisor
-from vice_next_mcp.transport_runtime import BinaryMonitorTransport
+from vice_next_mcp.supervisor import Supervisor  # noqa: E402
+from vice_next_mcp.transport_runtime import BinaryMonitorTransport  # noqa: E402
 
 
 def main() -> None:
@@ -44,10 +45,14 @@ def main() -> None:
             instance = supervisor.create(machine)
             transport = BinaryMonitorTransport(supervisor)
             for operation, call in (
-                ("vice.keyboard.matrix", lambda: transport.keyboard_matrix(
-                    instance.id, row=1, column=2, action="press")),
-                ("vice.keyboard.restore", lambda: transport.keyboard_restore(
-                    instance.id, action="press")),
+                (
+                    "vice.keyboard.matrix",
+                    lambda: transport.keyboard_matrix(instance.id, row=1, column=2, action="press"),
+                ),
+                (
+                    "vice.keyboard.restore",
+                    lambda: transport.keyboard_restore(instance.id, action="press"),
+                ),
             ):
                 try:
                     call()
@@ -71,7 +76,10 @@ def main() -> None:
         rows.append(row)
     out = ROOT / "validation" / "results" / "w3-b-keyboard-matrix-live.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"schema": "w3-b-keyboard-matrix-live/1", "rows": rows}, indent=2) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps({"schema": "w3-b-keyboard-matrix-live/1", "rows": rows}, indent=2) + "\n",
+        encoding="utf-8",
+    )
     print(out)
 
 

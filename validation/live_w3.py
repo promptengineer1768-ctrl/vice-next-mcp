@@ -5,6 +5,7 @@ validated by launching real VICE processes; effect checks are ``unavailable``
 until the supervised MCP operation layer exposes those operations.  This keeps
 the evidence ledger honest (a simulator or unit test is never labelled live).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,19 +27,25 @@ async def isolation(executable: Path, root: Path, *, soak: int = 1, machine: str
         started = time.time()
         try:
             first, second = await asyncio.gather(
-                ctl.launch(machine, executable, instance_id=f"a-{generation}", generation=generation),
-                ctl.launch(machine, executable, instance_id=f"b-{generation}", generation=generation),
+                ctl.launch(
+                    machine, executable, instance_id=f"a-{generation}", generation=generation
+                ),
+                ctl.launch(
+                    machine, executable, instance_id=f"b-{generation}", generation=generation
+                ),
             )
-            rows.append({
-                "generation": generation,
-                "pids": [first.process.pid, second.process.pid],
-                "ports": [first.monitor_port, second.monitor_port],
-                "roots": [str(first.paths.root), str(second.paths.root)],
-                "distinct_pid": first.process.pid != second.process.pid,
-                "distinct_port": first.monitor_port != second.monitor_port,
-                "distinct_root": first.paths.root != second.paths.root,
-                "evidence": "live",
-            })
+            rows.append(
+                {
+                    "generation": generation,
+                    "pids": [first.process.pid, second.process.pid],
+                    "ports": [first.monitor_port, second.monitor_port],
+                    "roots": [str(first.paths.root), str(second.paths.root)],
+                    "distinct_pid": first.process.pid != second.process.pid,
+                    "distinct_port": first.monitor_port != second.monitor_port,
+                    "distinct_root": first.paths.root != second.paths.root,
+                    "evidence": "live",
+                }
+            )
         finally:
             if first is not None:
                 await first.stop()
@@ -63,9 +70,17 @@ async def main() -> None:
         "executable_sha256": digest,
         "platform": os.name,
         "machine": args.machine,
-        "isolation": await isolation(exe, args.output, soak=max(1, args.soak), machine=args.machine),
-        "keyboard": {"status": "unavailable", "reason": "supervised keyboard operation not exposed"},
-        "snapshot": {"status": "unavailable", "reason": "supervised snapshot operation not exposed"},
+        "isolation": await isolation(
+            exe, args.output, soak=max(1, args.soak), machine=args.machine
+        ),
+        "keyboard": {
+            "status": "unavailable",
+            "reason": "supervised keyboard operation not exposed",
+        },
+        "snapshot": {
+            "status": "unavailable",
+            "reason": "supervised snapshot operation not exposed",
+        },
         "io_effects": {"status": "unavailable", "reason": "live capture operation not exposed"},
     }
     args.output.mkdir(parents=True, exist_ok=True)
