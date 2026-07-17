@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+dist/
+*.egg-info/
+build/vice-next-runs/
+build/vice-next-mcp/
+validation/results/

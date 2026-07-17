@@ -1,10 +1,13 @@
 import asyncio
 import inspect
 import json
+import logging
 from typing import Any, Awaitable, Callable
 from .catalog import tool_definitions
 from .errors import ViceError, invalid
 from .operations import compatibility_result, error_context, invoke
+
+LOGGER = logging.getLogger(__name__)
 
 Notify=Callable[[dict[str,Any]],Awaitable[None]]
 class McpServer:
@@ -45,6 +48,8 @@ class McpServer:
             envelope={"ok":False,"context":error_context(instance,raw.get("operation_id")) if instance else self._fallback_context(raw if 'raw' in locals() else {}),"error":exc.as_dict()}
             return self._result(request_id,{"content":[{"type":"text","text":json.dumps(envelope,separators=(",",":"))}],"structuredContent":envelope,"isError":True})
         except Exception as exc:
+            LOGGER.exception("MCP request failed", extra={"request_id":request_id,
+                           "method":method, "operation":raw.get("operation") if 'raw' in locals() else None})
             return self._rpc_error(request_id,-32603,"Internal error",{"type":type(exc).__name__})
         finally: self._cancel.pop(request_id,None)
     def _validate_request(self,request):
