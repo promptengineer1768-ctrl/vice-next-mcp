@@ -1,0 +1,3 @@
+[
+  {"machine": "c64", "variant": "smoke", "command": ["py", "examples/single_smoke.py"]}
+]

@@ -1,0 +1,47 @@
+{
+  "schema": "vice-next-mcp/live-randomized-isolation/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x64sc.exe",
+  "executable_sha256": "9a5fb20348f41cce263a359e7daed2691a211afb9d39399ee45af8092e8da87e",
+  "requested_operations": 100000,
+  "workers": 4,
+  "rows": [
+    {
+      "index": 0,
+      "instance_id": "365b8c95-bc12-4f91-898e-701543018f95",
+      "pid": 23420,
+      "operations": 50000,
+      "passed_reads": 25000,
+      "status": "passed",
+      "evidence": "live"
+    },
+    {
+      "index": 1,
+      "instance_id": "3cd5d693-82ca-488c-8659-29e6af5b6d8e",
+      "pid": 39444,
+      "operations": 50000,
+      "passed_reads": 25000,
+      "status": "passed",
+      "evidence": "live"
+    },
+    {
+      "index": 2,
+      "instance_id": "9e25067d-afd8-4854-9eb1-da26745ed17b",
+      "pid": 21216,
+      "operations": 50000,
+      "passed_reads": 25000,
+      "status": "passed",
+      "evidence": "live"
+    },
+    {
+      "index": 3,
+      "instance_id": "0b4c5320-be71-4ab7-8194-2946c93f0d03",
+      "pid": 36028,
+      "operations": 50000,
+      "passed_reads": 25000,
+      "status": "passed",
+      "evidence": "live"
+    }
+  ],
+  "status": "passed"
+}

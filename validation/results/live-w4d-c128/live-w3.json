@@ -1,0 +1,45 @@
+{
+  "schema": "vice-next-mcp/live-w3/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x128.exe",
+  "executable_sha256": "cefadb9f8677bceaca6426cf86d201760faf21879afdf9cb0a70395e48fff5b4",
+  "platform": "nt",
+  "machine": "c128",
+  "isolation": {
+    "status": "passed",
+    "elapsed_ms": 2849,
+    "cases": [
+      {
+        "generation": 1,
+        "pids": [
+          27332,
+          28904
+        ],
+        "ports": [
+          56603,
+          56604
+        ],
+        "roots": [
+          "C:\\Users\\me\\Documents\\Coding Projects\\tools\\vice-next-mcp\\validation\\results\\live-w4d-c128\\artifacts\\a-1\\generation-1",
+          "C:\\Users\\me\\Documents\\Coding Projects\\tools\\vice-next-mcp\\validation\\results\\live-w4d-c128\\artifacts\\b-1\\generation-1"
+        ],
+        "distinct_pid": true,
+        "distinct_port": true,
+        "distinct_root": true,
+        "evidence": "live"
+      }
+    ]
+  },
+  "keyboard": {
+    "status": "unavailable",
+    "reason": "supervised keyboard operation not exposed"
+  },
+  "snapshot": {
+    "status": "unavailable",
+    "reason": "supervised snapshot operation not exposed"
+  },
+  "io_effects": {
+    "status": "unavailable",
+    "reason": "live capture operation not exposed"
+  }
+}

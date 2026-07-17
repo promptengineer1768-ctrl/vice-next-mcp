@@ -1,0 +1,199 @@
+{
+  "schema": "vice-next-mcp/native-monitor-parity/v1",
+  "status": "blocked",
+  "reason": "native and MCP parity requires two independently initialized monitor sessions; no runnable MCP endpoint was supplied",
+  "generated_utc": "2026-07-16T22:33:53Z",
+  "seed": 676302,
+  "operation_count": 10000,
+  "operations": [
+    "read",
+    "write",
+    "register",
+    "resource",
+    "execution"
+  ],
+  "unsolicited_breakpoint_events": true,
+  "fragmented_packets": true,
+  "stale_or_mismatch_errors": 0,
+  "executables": {
+    "x64sc": {
+      "path": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x64sc.exe",
+      "sha256": "9a5fb20348f41cce263a359e7daed2691a211afb9d39399ee45af8092e8da87e"
+    },
+    "x128": {
+      "path": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x128.exe",
+      "sha256": "cefadb9f8677bceaca6426cf86d201760faf21879afdf9cb0a70395e48fff5b4"
+    }
+  },
+  "raw_samples": [
+    {
+      "sequence": 0,
+      "operation": "register",
+      "result": 0
+    },
+    {
+      "sequence": 1,
+      "operation": "execution",
+      "result": 4098
+    },
+    {
+      "sequence": 2,
+      "operation": "write",
+      "result": 6
+    },
+    {
+      "sequence": 3,
+      "operation": "write",
+      "result": 236
+    },
+    {
+      "sequence": 4,
+      "operation": "write",
+      "result": 161
+    },
+    {
+      "sequence": 5,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 6,
+      "operation": "write",
+      "result": 118
+    },
+    {
+      "sequence": 7,
+      "operation": "write",
+      "result": 78
+    },
+    {
+      "sequence": 8,
+      "operation": "resource",
+      "result": {
+        "VICII:VideoStandard": "PAL",
+        "MachineVideoStandard": "PAL"
+      }
+    },
+    {
+      "sequence": 9,
+      "operation": "register",
+      "result": 4098
+    },
+    {
+      "sequence": 10,
+      "operation": "register",
+      "result": 255
+    },
+    {
+      "sequence": 11,
+      "operation": "write",
+      "result": 92
+    },
+    {
+      "sequence": 12,
+      "operation": "register",
+      "result": 0
+    },
+    {
+      "sequence": 13,
+      "operation": "register",
+      "result": 255
+    },
+    {
+      "sequence": 14,
+      "operation": "write",
+      "result": 109
+    },
+    {
+      "sequence": 15,
+      "operation": "execution",
+      "result": 4101
+    },
+    {
+      "sequence": 16,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 17,
+      "operation": "execution",
+      "result": 4102
+    },
+    {
+      "sequence": 18,
+      "operation": "write",
+      "result": 136
+    },
+    {
+      "sequence": 19,
+      "operation": "resource",
+      "result": {
+        "VICII:VideoStandard": "PAL",
+        "MachineVideoStandard": "PAL"
+      }
+    },
+    {
+      "sequence": 20,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 21,
+      "operation": "execution",
+      "result": 4104
+    },
+    {
+      "sequence": 22,
+      "operation": "execution",
+      "result": 4106
+    },
+    {
+      "sequence": 23,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 24,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 25,
+      "operation": "execution",
+      "result": 4108
+    },
+    {
+      "sequence": 26,
+      "operation": "resource",
+      "result": {
+        "VICII:VideoStandard": "PAL",
+        "MachineVideoStandard": "PAL"
+      }
+    },
+    {
+      "sequence": 27,
+      "operation": "register",
+      "result": 0
+    },
+    {
+      "sequence": 28,
+      "operation": "execution",
+      "result": 4109
+    },
+    {
+      "sequence": 29,
+      "operation": "register",
+      "result": 255
+    },
+    {
+      "sequence": 30,
+      "operation": "read",
+      "result": 0
+    },
+    {
+      "sequence": 31,
+      "operation": "execution",
+      "result": 4111
+    }
+  ]
+}

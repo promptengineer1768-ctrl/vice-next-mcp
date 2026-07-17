@@ -1,0 +1,131 @@
+{
+  "schema": "vice-next-mcp/live-supervisor-soak/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x64sc.exe",
+  "executable_sha256": "9a5fb20348f41cce263a359e7daed2691a211afb9d39399ee45af8092e8da87e",
+  "workers": 8,
+  "elapsed_ms": 1632,
+  "rows": [
+    {
+      "index": 0,
+      "instance_id": "52a48a15-c514-4e90-8b7d-d3e001f0fd8b",
+      "pid": 28424,
+      "port": 50889,
+      "address": 8192,
+      "readback": [
+        0,
+        165,
+        255,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 1,
+      "instance_id": "445b1b78-1afb-4806-bd0b-60da6e240ef2",
+      "pid": 22844,
+      "port": 50890,
+      "address": 8196,
+      "readback": [
+        1,
+        165,
+        254,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 2,
+      "instance_id": "66a79cb0-be50-42cb-96e8-2579d1577db8",
+      "pid": 39608,
+      "port": 50891,
+      "address": 8200,
+      "readback": [
+        2,
+        165,
+        253,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 3,
+      "instance_id": "76e9aab9-93dc-4653-824c-1a00264489cc",
+      "pid": 13728,
+      "port": 50892,
+      "address": 8204,
+      "readback": [
+        3,
+        165,
+        252,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 4,
+      "instance_id": "26c72443-36a5-4002-83d5-ae14cb734a3a",
+      "pid": 31180,
+      "port": 50893,
+      "address": 8208,
+      "readback": [
+        4,
+        165,
+        251,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 5,
+      "instance_id": "0859275e-b57f-4106-a143-23d3bfff1a60",
+      "pid": 27996,
+      "port": 50894,
+      "address": 8212,
+      "readback": [
+        5,
+        165,
+        250,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 6,
+      "instance_id": "570361c2-1f76-4f84-8392-9c11d86fdcef",
+      "pid": 5988,
+      "port": 50895,
+      "address": 8216,
+      "readback": [
+        6,
+        165,
+        249,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 7,
+      "instance_id": "2860326f-a8c0-411b-8239-06849780ae9b",
+      "pid": 28104,
+      "port": 50896,
+      "address": 8220,
+      "readback": [
+        7,
+        165,
+        248,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    }
+  ],
+  "status": "passed"
+}

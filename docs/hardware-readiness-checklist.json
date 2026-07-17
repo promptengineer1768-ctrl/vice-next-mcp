@@ -1,0 +1,18 @@
+{
+  "schema": "multi.hardware-readiness.v1",
+  "status": "planned-no-hardware-validation",
+  "default_policy": {"unvalidated": "stock-iec", "experimental_start_us_per_bit": 20, "retry_at_profile": 1, "safe_failure_action": "abort-and-stock-fallback", "promotion": "disabled"},
+  "requirements": [
+    {"id":"cables", "values":["0.5m","1m","2m","3m","longest-available"], "status":"unvalidated"},
+    {"id":"drive_count", "values":[1,2,3,4], "status":"unvalidated"},
+    {"id":"drive_models", "values":["1541","1571","1581","mixed"], "status":"unvalidated"},
+    {"id":"host_video", "values":["c64-pal","c64-ntsc","c128-pal","c128-ntsc"], "status":"unvalidated"},
+    {"id":"c128_clock", "values":["1mhz","2mhz-blanked","1-to-2-transition"], "status":"unvalidated"},
+    {"id":"reu", "values":["absent","present"], "status":"unvalidated"},
+    {"id":"peripherals", "values":["printer","cartridge","iec-expander","worst-case-combination"], "status":"unvalidated"}
+  ],
+  "pass_rule": {"clean_blocks":1000,"fault_blocks":100,"power_cycle_repeats":3,"must_release_bus":true,"independent_review":true},
+  "failure_classes":["transport","timeout","stuck_low","contention","crc_noise","crc_timing","wrong_drive","reset","unknown"],
+  "capture_required":["analyser_native","csv","line_levels_and_owners","host_drive_registers","cia_via_ddr_latches_atna","counters","provenance","raw_hash"],
+  "results": []
+}

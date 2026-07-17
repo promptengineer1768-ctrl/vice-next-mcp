@@ -1,0 +1,31 @@
+{
+  "schema": "vice-next-mcp/live-drive-effects/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x64sc.exe",
+  "executable_sha256": "9a5fb20348f41cce263a359e7daed2691a211afb9d39399ee45af8092e8da87e",
+  "rows": [
+    {
+      "memspace": 1,
+      "address": "0x0200",
+      "readback": [
+        142,
+        165,
+        17,
+        124
+      ],
+      "passed": true,
+      "evidence": "live"
+    },
+    {
+      "register_window": "0x1800",
+      "value": [
+        7,
+        0,
+        26,
+        255
+      ],
+      "evidence": "live"
+    }
+  ],
+  "status": "passed"
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "vice-next-mcp/live-supervisor-soak/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x128.exe",
+  "executable_sha256": "cefadb9f8677bceaca6426cf86d201760faf21879afdf9cb0a70395e48fff5b4",
+  "workers": 4,
+  "elapsed_ms": 1573,
+  "rows": [
+    {
+      "index": 0,
+      "instance_id": "099cd6a2-d70a-49ac-a6cb-0eb8592abd35",
+      "pid": 38776,
+      "port": 63867,
+      "address": 8192,
+      "readback": [
+        0,
+        165,
+        255,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 1,
+      "instance_id": "cde6b444-f6a4-4a1c-a7b2-832db87c6fd5",
+      "pid": 26284,
+      "port": 63868,
+      "address": 8196,
+      "readback": [
+        1,
+        165,
+        254,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 2,
+      "instance_id": "e541bd6c-40cf-401a-b0ec-3f352780b3f5",
+      "pid": 28460,
+      "port": 63869,
+      "address": 8200,
+      "readback": [
+        2,
+        165,
+        253,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    },
+    {
+      "index": 3,
+      "instance_id": "d107710f-69d2-4822-a083-4634e2b242ca",
+      "pid": 16528,
+      "port": 63870,
+      "address": 8204,
+      "readback": [
+        3,
+        165,
+        252,
+        90
+      ],
+      "isolated": true,
+      "evidence": "live-supervisor"
+    }
+  ],
+  "status": "passed"
+}

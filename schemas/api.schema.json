@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vice-next-mcp.invalid/schemas/api.schema.json",
+  "title": "VICE Next MCP API contracts",
+  "$defs": {
+    "uuid": {"type": "string", "format": "uuid"},
+    "instanceTarget": {
+      "type": "object",
+      "required": ["instance_id", "generation"],
+      "properties": {
+        "instance_id": {"$ref": "#/$defs/uuid"},
+        "generation": {"type": "integer", "minimum": 1},
+        "lease_token": {"type": "string", "minLength": 43, "maxLength": 128}
+      },
+      "additionalProperties": false
+    },
+    "machine": {
+      "type": "object",
+      "required": ["class", "model", "emulator", "version"],
+      "properties": {
+        "class": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "emulator": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "memspace": {
+      "type": "object",
+      "required": ["requested", "resolved"],
+      "properties": {
+        "requested": {"type": ["string", "integer", "null"]},
+        "resolved": {"oneOf": [
+          {"const": "not_applicable"},
+          {"type": "object", "required": ["id", "name"], "properties": {
+            "id": {"type": "integer", "minimum": 0, "maximum": 255},
+            "name": {"type": "string", "minLength": 1},
+            "bank": {"type": ["integer", "string", "null"]}
+          }, "additionalProperties": false}
+        ]}
+      },
+      "additionalProperties": false
+    },
+    "time": {
+      "type": "object",
+      "required": ["meaningful", "observation_sequence"],
+      "properties": {
+        "meaningful": {"type": "boolean"},
+        "observation_sequence": {"type": "integer", "minimum": 0},
+        "host_cycle": {"type": "integer", "minimum": 0},
+        "frame": {"type": "integer", "minimum": 0},
+        "drive_cycle": {"type": "integer", "minimum": 0},
+        "correlation": {"enum": ["atomic", "bounded", "estimated", "unavailable"]},
+        "error_bound_cycles": {"type": "integer", "minimum": 0}
+      },
+      "allOf": [{"if": {"properties": {"meaningful": {"const": true}}}, "then": {"required": ["host_cycle", "frame"]}}],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "required": ["instance_id", "generation", "operation_id", "machine", "memspace", "lifecycle", "execution_state", "time"],
+      "properties": {
+        "instance_id": {"$ref": "#/$defs/uuid"},
+        "generation": {"type": "integer", "minimum": 1},
+        "operation_id": {"$ref": "#/$defs/uuid"},
+        "machine": {"$ref": "#/$defs/machine"},
+        "memspace": {"$ref": "#/$defs/memspace"},
+        "lifecycle": {"enum": ["starting", "running", "stopped", "monitor-active", "reset", "autostarting", "snapshotting", "crashed", "shutting-down"]},
+        "execution_state": {"enum": ["unknown", "running", "paused", "terminated"]},
+        "time": {"$ref": "#/$defs/time"}
+      },
+      "additionalProperties": false
+    },
+    "completion": {
+      "type": "object",
+      "required": ["kind", "effect_occurred", "evidence"],
+      "properties": {
+        "kind": {"enum": ["reply", "read_back", "state_observation", "event", "file_validation", "composite"]},
+        "effect_occurred": {"type": "boolean"},
+        "evidence": {"type": "array", "items": {"type": "object"}, "minItems": 1}
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "retriable", "effect_may_have_occurred", "details"],
+      "properties": {
+        "code": {"enum": ["INVALID_REQUEST", "INSTANCE_NOT_FOUND", "STALE_GENERATION", "LEASE_REQUIRED", "LEASE_CONFLICT", "STATE_CONFLICT", "CHILD_PROCESS_CRASHED", "TIMEOUT", "UNSUPPORTED_COMMAND", "VICE_MONITOR_ERROR", "TRANSPORT_ERROR", "VERIFICATION_FAILED", "CANCELLED"]},
+        "message": {"type": "string", "minLength": 1},
+        "retriable": {"type": "boolean"},
+        "effect_may_have_occurred": {"type": "boolean"},
+        "details": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "successEnvelope": {
+      "type": "object",
+      "required": ["ok", "context", "completion", "result"],
+      "properties": {
+        "ok": {"const": true},
+        "context": {"$ref": "#/$defs/context"},
+        "completion": {"$ref": "#/$defs/completion"},
+        "result": {}
+      },
+      "additionalProperties": false
+    },
+    "errorEnvelope": {
+      "type": "object",
+      "required": ["ok", "context", "error"],
+      "properties": {
+        "ok": {"const": false},
+        "context": {"$ref": "#/$defs/context"},
+        "error": {"$ref": "#/$defs/error"}
+      },
+      "additionalProperties": false
+    },
+    "capability": {
+      "type": "object",
+      "required": ["name", "version", "scope", "available", "source", "constraints"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^vice\\.[a-z0-9_.]+$"},
+        "version": {"type": "integer", "minimum": 1},
+        "scope": {"enum": ["supervisor", "instance", "host", "drive"]},
+        "available": {"type": "boolean"},
+        "source": {"enum": ["native", "extension", "derived"]},
+        "constraints": {"type": "object"},
+        "reason_unavailable": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "instanceMetadata": {
+      "type": "object",
+      "required": ["instance_id", "generation", "lifecycle", "execution_state", "machine", "ports", "config_overlay", "capabilities"],
+      "properties": {
+        "instance_id": {"$ref": "#/$defs/uuid"},
+        "generation": {"type": "integer", "minimum": 1},
+        "lifecycle": {"$ref": "#/$defs/context/properties/lifecycle"},
+        "execution_state": {"$ref": "#/$defs/context/properties/execution_state"},
+        "machine": {"$ref": "#/$defs/machine"},
+        "pid": {"type": "integer", "minimum": 1},
+        "ports": {"type": "object", "required": ["native_monitor", "mcp"], "properties": {
+          "native_monitor": {"type": "integer", "minimum": 1, "maximum": 65535},
+          "mcp": {"type": "integer", "minimum": 1, "maximum": 65535}
+        }, "additionalProperties": false},
+        "config_overlay": {"type": "string", "minLength": 1},
+        "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capability"}}
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": ["event_id", "event_type", "context", "payload"],
+      "properties": {
+        "event_id": {"$ref": "#/$defs/uuid"},
+        "event_type": {"type": "string", "minLength": 1},
+        "context": {"$ref": "#/$defs/context"},
+        "payload": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/successEnvelope"},
+    {"$ref": "#/$defs/errorEnvelope"},
+    {"$ref": "#/$defs/event"},
+    {"$ref": "#/$defs/instanceMetadata"},
+    {"$ref": "#/$defs/instanceTarget"}
+  ]
+}

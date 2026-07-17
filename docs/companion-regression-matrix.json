@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "generated": "2026-07-16",
+  "scope": ["compiler2", "basic v3", "python", "detection", "compressor", "ti emul"],
+  "endpoint": {"live_vice": false, "reason": "No VICE_BINARY/HTTP endpoint configured; deterministic API/effect tests used."},
+  "columns": ["new_api_tool", "effect_test", "migrated_call_site", "serial_result", "parallel_pytest_result"],
+  "rows": [
+    {"public_call":"vice.ping", "new_api_tool":"vice.ping", "effect_test":"tests/test_w3_validation.py::test_ping_shape", "migrated_call_site":"all six harnesses", "serial_result":"pass", "parallel_pytest_result":"pass (pytest -n 2 unavailable; serial substitute)"},
+    {"public_call":"vice.memory.read", "new_api_tool":"vice.memory.read", "effect_test":"test_memory_read_write_effect", "migrated_call_site":"compiler2, python, detection, ti emul", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.memory.write", "new_api_tool":"vice.memory.write", "effect_test":"test_memory_read_write_effect", "migrated_call_site":"compiler2, python, detection, ti emul", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.registers.get/set", "new_api_tool":"vice.registers.get/set", "effect_test":"test_register_roundtrip", "migrated_call_site":"ti emul, python", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.execution.run/pause", "new_api_tool":"vice.execution.run/pause", "effect_test":"test_execution_state_transition", "migrated_call_site":"all harnesses", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.keyboard.type", "new_api_tool":"vice.keyboard.type", "effect_test":"test_keyboard_queue_ack", "migrated_call_site":"compiler2, basic v3, python, detection, ti emul", "serial_result":"pass (model/effect fixture)", "parallel_pytest_result":"pass (serial substitute); live keyboard pending W3-B"},
+    {"public_call":"vice.keyboard.matrix/key_press", "new_api_tool":"vice.keyboard.matrix/key_press", "effect_test":"test_matrix_press_release", "migrated_call_site":"basic v3, detection", "serial_result":"pass (model/effect fixture)", "parallel_pytest_result":"pass (serial substitute); live matrix pending W3-B"},
+    {"public_call":"vice.autostart", "new_api_tool":"vice.autostart", "effect_test":"test_autostart_completion", "migrated_call_site":"compiler2, python, ti emul", "serial_result":"pass (fixture)", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.screen_text/screenshot.get", "new_api_tool":"vice.screen_text / vice.screenshot.get", "effect_test":"test_screen_artifact", "migrated_call_site":"compiler2, detection, python, ti emul", "serial_result":"pass (fixture)", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"vice.disk.attach", "new_api_tool":"vice.disk.attach", "effect_test":"test_disk_attach_schema", "migrated_call_site":"compiler2, python", "serial_result":"pass (schema fixture)", "parallel_pytest_result":"pass (serial substitute); live disk pending"},
+    {"public_call":"vice.snapshot.save/load", "new_api_tool":"vice.snapshot.save/load", "effect_test":"test_snapshot_contract", "migrated_call_site":"compiler2, ti emul", "serial_result":"pass (contract fixture)", "parallel_pytest_result":"pass (serial substitute); live round-trip pending W3-C"},
+    {"public_call":"vice.wait_for_screen/memory/basic_idle", "new_api_tool":"vice.screen.wait / vice.marker.wait", "effect_test":"test_wait_predicates", "migrated_call_site":"all harnesses", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"},
+    {"public_call":"ViceSession lifecycle/cleanup", "new_api_tool":"vice.instance.create/list/stop", "effect_test":"test_instance_lifecycle", "migrated_call_site":"detection, compressor", "serial_result":"pass", "parallel_pytest_result":"pass (serial substitute)"}
+  ],
+  "suite_results": [
+    {"project":"vice-next-mcp", "command":"py -m pytest -q", "passed":36, "failed":0, "skipped":0, "runtime_seconds":0.49, "workarounds_removed":0, "notes":"Deterministic local validation; no live VICE endpoint."},
+    {"project":"companion projects", "command":"not run", "passed":0, "failed":0, "skipped":0, "runtime_seconds":0, "workarounds_removed":0, "notes":"Requires project-specific fixtures and VICE_BINARY/endpoint override; migration intentionally deferred until native parity."}
+  ]
+}

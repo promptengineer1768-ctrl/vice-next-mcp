@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vice-next-mcp.invalid/schemas/request.schema.json",
+  "title": "VICE Next MCP request routing contract",
+  "$defs": {
+    "instanceTarget": {
+      "type": "object",
+      "required": ["instance_id", "generation", "lease_token"],
+      "properties": {
+        "instance_id": {"type": "string", "format": "uuid"},
+        "generation": {"type": "integer", "minimum": 1},
+        "lease_token": {"type": "string", "minLength": 43, "maxLength": 128}
+      },
+      "additionalProperties": false
+    },
+    "instanceRequest": {
+      "type": "object",
+      "required": ["operation", "operation_id", "target", "deadline_ms", "arguments"],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "pattern": "^vice\\.(?!instance\\.(create|list)$|batch\\.capacity$)[a-z0-9_.]+$"
+        },
+        "operation_id": {"type": "string", "format": "uuid"},
+        "target": {"$ref": "#/$defs/instanceTarget"},
+        "deadline_ms": {"type": "integer", "minimum": 1, "maximum": 3600000},
+        "arguments": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "supervisorRequest": {
+      "type": "object",
+      "required": ["operation", "operation_id", "deadline_ms", "arguments"],
+      "properties": {
+        "operation": {"enum": ["vice.instance.create", "vice.instance.list", "vice.batch.capacity"]},
+        "operation_id": {"type": "string", "format": "uuid"},
+        "deadline_ms": {"type": "integer", "minimum": 1, "maximum": 3600000},
+        "arguments": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/instanceRequest"},
+    {"$ref": "#/$defs/supervisorRequest"}
+  ]
+}

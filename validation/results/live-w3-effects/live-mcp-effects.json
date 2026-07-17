@@ -1,0 +1,115 @@
+{
+  "schema": "vice-next-mcp/live-mcp-effects/1",
+  "evidence_class": "live",
+  "executable": "C:\\tmp\\vice-official-sdl2-3.10\\SDL2VICE-3.10-win64\\x64sc.exe",
+  "rows": [
+    {
+      "operation": "vice.memory.read",
+      "status": "passed",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"ok\":true,\"context\":{\"instance_id\":\"c11a77dd-a594-44ca-92c1-ba9679f36b54\",\"generation\":1,\"operation_id\":\"4e5f9d3d-41e8-4ecb-9abd-d5864da376d8\",\"machine\":{\"class\":\"x64sc\",\"model\":\"x64sc\",\"emulator\":\"VICE\"},\"memspace\":{\"requested\":null,\"resolved\":\"not_applicable\"},\"lifecycle\":\"running\",\"execution_state\":\"running\",\"time\":{\"meaningful\":false,\"observation_sequence\":1}},\"completion\":{\"kind\":\"live-monitor-observed\",\"effect_occurred\":true,\"evidence\":[{\"operation\":\"memory.read\",\"instance_id\":\"c11a77dd-a594-44ca-92c1-ba9679f36b54\",\"generation\":1,\"state\":\"running\",\"effect\":{\"command\":\"memory.read\"}}]},\"result\":[0,0]}"
+            }
+          ],
+          "structuredContent": {
+            "ok": true,
+            "context": {
+              "instance_id": "c11a77dd-a594-44ca-92c1-ba9679f36b54",
+              "generation": 1,
+              "operation_id": "4e5f9d3d-41e8-4ecb-9abd-d5864da376d8",
+              "machine": {
+                "class": "x64sc",
+                "model": "x64sc",
+                "emulator": "VICE"
+              },
+              "memspace": {
+                "requested": null,
+                "resolved": "not_applicable"
+              },
+              "lifecycle": "running",
+              "execution_state": "running",
+              "time": {
+                "meaningful": false,
+                "observation_sequence": 1
+              }
+            },
+            "completion": {
+              "kind": "live-monitor-observed",
+              "effect_occurred": true,
+              "evidence": [
+                {
+                  "operation": "memory.read",
+                  "instance_id": "c11a77dd-a594-44ca-92c1-ba9679f36b54",
+                  "generation": 1,
+                  "state": "running",
+                  "effect": {
+                    "command": "memory.read"
+                  }
+                }
+              ]
+            },
+            "result": [
+              0,
+              0
+            ]
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "operation": "snapshot.save",
+      "status": "passed",
+      "response": {
+        "result": null,
+        "evidence": {
+          "operation": "snapshot.save",
+          "instance_id": "c11a77dd-a594-44ca-92c1-ba9679f36b54",
+          "generation": 1,
+          "state": "running",
+          "effect": {
+            "command": "snapshot.save"
+          }
+        }
+      },
+      "exists": true
+    },
+    {
+      "operation": "snapshot.load",
+      "status": "passed",
+      "response": {
+        "result": "b'u\\xfd'",
+        "evidence": {
+          "operation": "snapshot.load",
+          "instance_id": "c11a77dd-a594-44ca-92c1-ba9679f36b54",
+          "generation": 1,
+          "state": "running",
+          "effect": {
+            "command": "snapshot.load"
+          }
+        }
+      },
+      "exists": true
+    },
+    {
+      "operation": "keyboard",
+      "status": "unsupported",
+      "reason": "runtime capability not exposed"
+    },
+    {
+      "operation": "trace",
+      "status": "unsupported",
+      "reason": "runtime capability not exposed"
+    },
+    {
+      "operation": "iec_capture",
+      "status": "unsupported",
+      "reason": "runtime capability not exposed"
+    }
+  ]
+}

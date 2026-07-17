@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/VICE-Team/svn-mirror",
+  "release": "3.10.0",
+  "asset": "SDL2VICE-3.10-win64.zip",
+  "archive_sha256": "DFA7E0223EA1357BAE988B5C88B332C3B8F80DC3C7A2B51233F50BAB5263DCA5",
+  "monitor_protocol": 2,
+  "status": "native-monitor baseline validated"
+}

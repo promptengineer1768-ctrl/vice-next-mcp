@@ -1,0 +1,8 @@
+{
+  "suite": "tests/test_w3_validation.py",
+  "run": "py -m pytest -q tests/test_w3_validation.py",
+  "passed": 5,
+  "failed": 0,
+  "live_vice": false,
+  "gaps": ["official-VICE keyboard matrix permutations", "drive snapshot state", "sustained capture event-rate/drop limits"]
+}
