@@ -40,6 +40,12 @@ physical keyboard matrix and RESTORE operations. The catalog also defines:
 These are intentionally unavailable unless a transport bridge supplies the
 corresponding native observer data; the server never fabricates evidence.
 
+Keyboard matrix injection is supported for C64, C64-fast, C128, VIC-20,
+Plus/4, C16, PET, CBM-II, CBM 5x0, C64DTV, and SCPU64 VICE executables. IEC
+observer coverage is available for C64, C64DTV, Plus/4, and VIC-20; PET is
+deliberately excluded because its IEC implementation does not use the shared
+resolved-bus path.
+
 ## Design rules
 
 The MCP server communicates with VICE through the binary monitor and keeps

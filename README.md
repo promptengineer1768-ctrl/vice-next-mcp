@@ -4,6 +4,10 @@ See [`MANUAL.md`](MANUAL.md) for the publication manual, protocol model, and
 instrumented-capability rules. This project is GPLv2-or-later; see
 [`COPYING`](COPYING).
 
+Keyboard matrix injection covers C64/C128, VIC-20, Plus/4/C16, PET, CBM-II,
+CBM 5x0, C64DTV, and SCPU64 targets. IEC observers cover C64, C64DTV, Plus/4,
+and VIC-20; PET is explicitly excluded.
+
 > Experimental Wave 2 transport and MCP schema with supervised lifecycle and
 > batch execution. Hardware/protocol evidence remains separately gated.
 
