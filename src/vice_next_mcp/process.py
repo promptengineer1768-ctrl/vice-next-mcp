@@ -7,8 +7,14 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from .monitor import BinaryMonitorTransport
 
-SUPPORTED = {"c64": "x64sc", "c128": "x128", "vic20": "xvic",
-             "plus4": "xplus4", "c16": "xplus4", "pet": "xpet"}
+SUPPORTED = {
+    "c64": "x64sc",
+    "c128": "x128",
+    "vic20": "xvic",
+    "plus4": "xplus4",
+    "c16": "xplus4",
+    "pet": "xpet",
+}
 WRITABLE = {".d64", ".d71", ".d81", ".g64", ".g71", ".p64", ".tap"}
 
 

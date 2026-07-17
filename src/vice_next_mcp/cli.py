@@ -88,7 +88,9 @@ def main(argv=None):
     b.set_defaults(func=batch_main)
     m = sub.add_parser("mcp-stdio", help="serve one supervised VICE instance over JSON-RPC stdio")
     m.add_argument("--executable", required=True)
-    m.add_argument("--machine", choices=("x64sc", "x128", "xvic", "xplus4", "xpet"), default="x64sc")
+    m.add_argument(
+        "--machine", choices=("x64sc", "x128", "xvic", "xplus4", "xpet"), default="x64sc"
+    )
     m.add_argument("--artifact-root", default="build/vice-next-mcp")
 
     def stdio(ns):
