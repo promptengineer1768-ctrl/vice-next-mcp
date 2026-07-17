@@ -9,11 +9,16 @@ from .monitor import BinaryMonitorTransport
 
 SUPPORTED = {
     "c64": "x64sc",
+    "c64-fast": "x64",
     "c128": "x128",
     "vic20": "xvic",
     "plus4": "xplus4",
     "c16": "xplus4",
     "pet": "xpet",
+    "cbm2": "xcbm2",
+    "cbm5x0": "xcbm5x0",
+    "c64dtv": "x64dtv",
+    "scpu64": "xscpu64",
 }
 WRITABLE = {".d64", ".d71", ".d81", ".g64", ".g71", ".p64", ".tap"}
 
@@ -173,7 +178,7 @@ class ProcessController:
     @staticmethod
     def validate(machine, executable):
         if machine not in SUPPORTED:
-            raise ValueError("unsupported machine; choose c64, c128, vic20, plus4, c16, or pet")
+            raise ValueError("unsupported machine; see process.SUPPORTED")
         executable = Path(executable).resolve(strict=True)
         if executable.stem.lower() != SUPPORTED[machine]:
             raise ValueError(f"{machine} requires {SUPPORTED[machine]}")
