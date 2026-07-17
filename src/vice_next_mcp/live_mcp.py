@@ -1,4 +1,5 @@
 """Bridge the supervised live VICE instances into the MCP operation server."""
+
 from __future__ import annotations
 import asyncio
 from typing import Any
@@ -41,35 +42,56 @@ class SupervisorTransport:
             raise RuntimeError("cancelled")
         runtime_operation = operation[5:] if operation.startswith("vice.") else operation
         if runtime_operation == "keyboard.type":
-            result = await asyncio.to_thread(self.runtime.keyboard_type, self.instance_id,
-                                             arguments["text"])
+            result = await asyncio.to_thread(
+                self.runtime.keyboard_type, self.instance_id, arguments["text"]
+            )
         elif runtime_operation == "keyboard.matrix":
             # Do not silently fall back to KERNAL injection: the binary monitor
             # has no row/column transition primitive.
-            result = await asyncio.to_thread(self.runtime.keyboard_matrix, self.instance_id,
-                                             row=arguments["row"], column=arguments["column"],
-                                             action=arguments["action"], frames=arguments.get("frames", 1))
+            result = await asyncio.to_thread(
+                self.runtime.keyboard_matrix,
+                self.instance_id,
+                row=arguments["row"],
+                column=arguments["column"],
+                action=arguments["action"],
+                frames=arguments.get("frames", 1),
+            )
         elif runtime_operation == "keyboard.restore":
-            result = await asyncio.to_thread(self.runtime.keyboard_restore, self.instance_id,
-                                             action=arguments["action"])
+            result = await asyncio.to_thread(
+                self.runtime.keyboard_restore, self.instance_id, action=arguments["action"]
+            )
         else:
-            result = await asyncio.to_thread(self.runtime.execute, self.instance_id, runtime_operation, **arguments)
+            result = await asyncio.to_thread(
+                self.runtime.execute, self.instance_id, runtime_operation, **arguments
+            )
         value = result["result"]
         if isinstance(value, (bytes, bytearray)):
             value = list(value)
-        return {"result": value, "accepted": {**result, "result": value},
-                "evidence": result["evidence"], "effect_occurred": True}
+        return {
+            "result": value,
+            "accepted": {**result, "result": value},
+            "evidence": result["evidence"],
+            "effect_occurred": True,
+        }
 
-    async def observe_effect(self, operation, arguments, accepted, *, operation_id, deadline_ms, cancel, progress):
+    async def observe_effect(
+        self, operation, arguments, accepted, *, operation_id, deadline_ms, cancel, progress
+    ):
         await progress(1.0, f"{operation} completed")
-        return {"result": accepted.get("result"), "effect_occurred": True,
-                "evidence": [accepted["evidence"]], "completion_kind": "live-monitor-observed"}
+        return {
+            "result": accepted.get("result"),
+            "effect_occurred": True,
+            "evidence": [accepted["evidence"]],
+            "completion_kind": "live-monitor-observed",
+        }
 
 
 class LiveMcpRuntime:
     def __init__(self, supervisor: Supervisor, *, compatibility_mode=None):
         self.supervisor = supervisor
-        self.server = McpServer(SupervisorResolver(supervisor), compatibility_mode=compatibility_mode)
+        self.server = McpServer(
+            SupervisorResolver(supervisor), compatibility_mode=compatibility_mode
+        )
 
     async def handle(self, message, notify=None):
         return await self.server.handle(message, notify)

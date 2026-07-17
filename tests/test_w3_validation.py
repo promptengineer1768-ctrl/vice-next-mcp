@@ -2,6 +2,7 @@
 
 These tests exercise observable artifacts/events rather than merely response shapes.
 """
+
 import json
 import struct
 
@@ -13,8 +14,14 @@ from vice_next_mcp.trace import TraceWriter
 
 def test_w3b_keyboard_effects_and_cancel(tmp_path):
     q = KeyboardQueue("C128")
-    q.enqueue([KeyboardAction("press", "A"), KeyboardAction("release", "A"),
-               KeyboardAction("restore", "RESTORE"), KeyboardAction("release", "RESTORE")])
+    q.enqueue(
+        [
+            KeyboardAction("press", "A"),
+            KeyboardAction("release", "A"),
+            KeyboardAction("restore", "RESTORE"),
+            KeyboardAction("release", "RESTORE"),
+        ]
+    )
     ev = q.tick(4, running=True)
     assert [e["kind"] for e in ev] == ["press", "release", "restore", "release"]
     assert q.status()["held"] == []
@@ -52,7 +59,8 @@ def test_w3c_snapshot_roundtrip_and_fingerprint_rejection(tmp_path):
 def test_w3c_trace_nonempty_events_and_order(tmp_path):
     p = tmp_path / "trace.jsonl"
     t = TraceWriter(p, metadata={"machine": "C64"})
-    t.start(); t.event({"cycle": 10, "address": 0xA000, "registers": {"pc": 0x1234}})
+    t.start()
+    t.event({"cycle": 10, "address": 0xA000, "registers": {"pc": 0x1234}})
     out = t.stop()
     assert out["event_count"] == 1 and out["size"] > 0
     rows = [json.loads(x) for x in p.read_text().splitlines()]
@@ -61,13 +69,21 @@ def test_w3c_trace_nonempty_events_and_order(tmp_path):
 
 
 def test_w3d_io_timestamps_driver_attribution_and_memory_comparison(tmp_path):
-    c = IOCapture(addresses={0xDD00}, memspaces={"cpu"}); c.start()
+    c = IOCapture(addresses={0xDD00}, memspaces={"cpu"})
+    c.start()
     c.record(100, "write", 0xDD00, 1, "cpu")
     c.record(101, "write", 0xD000, 2, "cpu")
     assert len(c.export()) == 1 and c.events[0].cycle == 100
-    iec = IECapture(); iec.start(); iec.line(120, clk=0, data=1, drivers={"host": {"clk": 0}})
-    row = iec.export()[0]; assert row["cycle"] == 120 and row["details"]["details"]["drivers"]["host"]["clk"] == 0
-    mem = MemoryCapture(addresses={0x1000}); mem.start(); mem.sample(200, 0x1000, 0x55)
+    iec = IECapture()
+    iec.start()
+    iec.line(120, clk=0, data=1, drivers={"host": {"clk": 0}})
+    row = iec.export()[0]
+    assert row["cycle"] == 120 and row["details"]["details"]["drivers"]["host"]["clk"] == 0
+    mem = MemoryCapture(addresses={0x1000})
+    mem.start()
+    mem.sample(200, 0x1000, 0x55)
     # REU fixed-address sampling observes the same value; cycle is retained for alias analysis.
     assert mem.export()[0]["value"] == 0x55
-    (tmp_path / "io.json").write_text(json.dumps({"io": c.export(), "iec": iec.export(), "reu": mem.export()}))
+    (tmp_path / "io.json").write_text(
+        json.dumps({"io": c.export(), "iec": iec.export(), "reu": mem.export()})
+    )
