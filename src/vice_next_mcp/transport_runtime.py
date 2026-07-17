@@ -48,6 +48,12 @@ class BinaryMonitorTransport:
             m.ping()
             i.state = "paused"
             result = None
+        elif operation == "step.instruction":
+            result = m.step_instruction(int(params.get("count", 1)))
+            i.state = "paused"
+        elif operation == "step.over":
+            result = m.step_over(int(params.get("count", 1)))
+            i.state = "paused"
         elif operation == "reset":
             result = m.reset(int(params.get("target", 0)))
         elif operation == "snapshot.save":

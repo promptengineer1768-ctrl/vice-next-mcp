@@ -93,3 +93,7 @@ The reusable protocol client is `multi/tests/vice_binary_monitor.py`.
 5. No modal Windows error boxes; child crashes become structured MCP errors.
 6. Communication experiments must produce the same bytes through direct and MCP
    paths before MCP results are accepted as evidence.
+
+### CPU stepping
+ice.step.instruction and ice.step.over accept a bounded count (1-100000). Both issue VICE binary-monitor command 0x71 once per instruction and leave the monitor paused. The primitive is CPU-neutral and works for 6502-family machines and the C128 Z80. VICE's binary monitor has no distinct source-level 
+ext command, so step.over is intentionally instruction stepping with explicit evidence.

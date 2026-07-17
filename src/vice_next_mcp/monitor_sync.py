@@ -72,6 +72,30 @@ class BinaryMonitor:
     def resume(self):
         self.call(0xAA)
 
+    def step_instruction(self, count: int = 1):
+        """Execute exactly ``count`` CPU instructions while paused.
+
+        Binary-monitor command ``0x71`` is CPU-neutral and therefore works
+        for both the Z80 (C128) and 6502-family CPUs (C64/VIC-20/Plus4/PET).
+        VICE leaves the monitor paused after each command.
+        """
+        count = int(count)
+        if not 1 <= count <= 100000:
+            raise ValueError("instruction count must be in 1..100000")
+        for _ in range(count):
+            self.call(0x71)
+        return {"count": count, "command": "0x71", "execution_state": "paused"}
+
+    def step_over(self, count: int = 1):
+        """Step over instruction(s) using VICE's CPU-neutral single-step.
+
+        The binary monitor has no separate source-level ``next`` primitive;
+        this operation intentionally uses instruction stepping, preserving a
+        deterministic and truthful contract for Z80 and 6502 targets.
+        """
+        result = self.step_instruction(count)
+        return {**result, "over": True}
+
     def reset(self, target=0):
         self.call(0xCC, bytes((target,)))
 

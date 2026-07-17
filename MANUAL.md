@@ -57,3 +57,6 @@ effect so callers can reject stale or contradictory results.
 
 This server is released under the GNU General Public License version 2 or any
 later version. See [`COPYING`](COPYING).
+
+## CPU stepping
+Use ice.step.instruction or ice.step.over with {count} to execute 1–100000 instructions. The MCP repeats monitor command 0x71 and reports a paused terminal state. This works on Z80 and 6502-family VICE machines. step.over is an instruction-level alias because the binary monitor exposes no separate source-level next operation.
