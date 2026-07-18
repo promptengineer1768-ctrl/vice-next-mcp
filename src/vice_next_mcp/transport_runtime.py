@@ -148,7 +148,7 @@ class BinaryMonitorTransport:
             raise RuntimeError(
                 "native VICE RESTORE injection is unavailable; instrumented VICE is required"
             )
-        i.monitor.keyboard_matrix(-3, 0, action == "press")
+        i.monitor.keyboard_restore(action == "press")
         return {
             "result": {"action": action},
             "evidence": OperationEvidence(

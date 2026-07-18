@@ -113,10 +113,20 @@ class BinaryMonitor:
         self.call(0x72, bytes((len(data),)) + data)
 
     def keyboard_matrix(self, row: int, column: int, pressed: bool):
-        """Set one cell using the instrumented VICE 0x74 extension."""
+        """Reject matrix input until its distinct monitor extension exists."""
         if not -5 <= int(row) <= 15 or not 0 <= int(column) <= 7:
             raise ValueError("keyboard matrix coordinates out of range")
-        self.call(0x74, struct.pack("<bBB", int(row), int(column), 1 if pressed else 0))
+        raise RuntimeError(
+            "VICE binary monitor has no matrix-input command; "
+            "RESTORE uses its own 0x74 extension"
+        )
+
+    def keyboard_restore(self, pressed: bool) -> None:
+        """Assert or release the native RESTORE/NMI source (extension 0x74)."""
+        response = self.call(0x74, bytes((int(bool(pressed)),)))
+        expected = bytes((int(bool(pressed)),))
+        if response.body != expected:
+            raise RuntimeError("VICE RESTORE command returned an invalid acknowledgement")
 
     def dump(self, path):
         p = str(path).encode()
