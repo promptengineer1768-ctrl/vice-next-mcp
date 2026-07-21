@@ -1,5 +1,5 @@
 from __future__ import annotations
-import os, socket, subprocess, tempfile, threading, time, uuid
+import os, socket, struct, subprocess, tempfile, threading, time, uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -151,7 +151,7 @@ class Supervisor:
             raise TimeoutError("VICE monitor did not start")
         supported = set(OPS) - {"vice.keyboard.matrix", "vice.keyboard.restore"}
         # Instrumented VICE builds advertise the extension explicitly.  Keep
-        # stock 3.10 conservative so callers receive a structured
+        # stock VICE conservative so callers receive a structured
         # unsupported-capability error instead of a misleading fallback.
         if os.environ.get("VICE_MCP_INSTRUMENTED") == "1":
             supported |= {"vice.keyboard.matrix", "vice.keyboard.restore"}
@@ -167,7 +167,13 @@ class Supervisor:
         )
         self._instances[ident] = inst
         if autostart:
-            mon.call(0xDD, bytes((1, 0, len(str(autostart).encode()))) + str(autostart).encode())
+            filename = str(autostart).encode()
+            if len(filename) > 0xFF:
+                raise ValueError("VICE autostart path must be at most 255 bytes")
+            # VICE command $DD is: run byte, uint16 file index, uint8 length,
+            # then the filename.  The former three-byte header shifted the
+            # length into the file-index field and malformed every request.
+            mon.call(0xDD, struct.pack("<BHB", 1, 0, len(filename)) + filename)
         return inst
 
     # ``start`` is the explicit lifecycle spelling used by the CLI and MCP.

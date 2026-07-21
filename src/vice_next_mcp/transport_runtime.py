@@ -40,6 +40,10 @@ class BinaryMonitorTransport:
                 int(memspace),
                 int(params.get("bank", 0)),
             )
+        elif operation == "registers.get":
+            result = m.registers(int(memspace))
+        elif operation == "registers.set":
+            result = m.registers_set(params["values"], int(memspace))
         elif operation == "run":
             m.resume()
             i.state = "running"
@@ -78,13 +82,11 @@ class BinaryMonitorTransport:
         if not isinstance(text, str) or len(text) > 255:
             raise ValueError("text must contain at most 255 characters")
         i = self.supervisor.get(instance_id)
-        data = bytes((ord(ch) & 0x7F) for ch in text)
+        # The monitor consumes PETSCII keyboard-buffer bytes, not host newline
+        # bytes.  Translate line feeds so ``keyboard.type("RUN\\n")`` behaves
+        # like pressing RETURN on a C64, matching the public MCP contract.
+        data = bytes(0x0D if ch == "\n" else ord(ch) & 0x7F for ch in text)
         i.monitor.keyboard_feed(data)
-        # Keep the legacy KERNAL buffer mirror for deterministic programs
-        # which inspect $0277 directly; this is compatibility state, never
-        # reported as matrix input and never used by ``keyboard.matrix``.
-        i.monitor.memory_write(0x0277, data)
-        i.monitor.memory_write(0x00C6, bytes((len(data),)))
         return {
             "result": {"count": len(data), "mode": "vice-binary-keyboard-feed"},
             "evidence": OperationEvidence(
@@ -96,7 +98,7 @@ class BinaryMonitorTransport:
                     "monitor_command": "0x72",
                     "api_version": 2,
                     "physical_matrix": False,
-                    "compatibility_shadow": True,
+                    "compatibility_shadow": False,
                     "count": len(data),
                 },
             ).__dict__,

@@ -52,7 +52,8 @@ def test_live_mcp_memory_effect():
             assert result["result"]["structuredContent"]["completion"]["effect_occurred"]
             typed = BinaryMonitorTransport(supervisor).keyboard_type(instance.id, "HELLO")
             assert typed["result"]["count"] == 5
-            assert list(instance.monitor.memory(0x0277, 5)) == list(b"HELLO")
+            assert typed["evidence"]["effect"]["monitor_command"] == "0x72"
+            assert typed["evidence"]["effect"]["compatibility_shadow"] is False
         finally:
             lease.release()
             supervisor.close()
