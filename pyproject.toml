@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vice-next-mcp"
 version = "0.1.0"
-license = {file = "COPYING"}
-classifiers = ["License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)"]
+license = "GPL-2.0-or-later"
+license-files = ["COPYING"]
 requires-python = ">=3.11"
 
 [project.optional-dependencies]

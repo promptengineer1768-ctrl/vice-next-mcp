@@ -49,6 +49,19 @@ Use `VICE_MCP_BASE_PORT=0` (or omit `--base-port`) for ephemeral ports. Each
 case receives a stable id, a fresh artifact directory and a serial reproduction
 hint in `results.json`.
 
+### Parallel-session isolation
+
+Each launch reserves its native-monitor port with both an exclusive loopback
+socket and a cross-process lease file. The socket is handed off immediately
+before VICE starts; the lease remains until teardown, preventing independent
+pytest workers and MCP servers from selecting the same port. Stale leases from
+dead owners are reclaimed automatically.
+
+Mutable disk/tape media is copied into a generation-specific directory. Config,
+logs, traces, screenshots, crash evidence, snapshots, and temporary files also
+live beneath that generation root. Teardown stops the owned VICE process tree,
+drains log pumps, and releases only the caller's token-matched port lease.
+
 Experimental replacement for the embedded VICE MCP build. This project keeps the
 existing `vice-mcp` installation untouched and uses VICE's version-2 binary monitor
 as the control boundary.

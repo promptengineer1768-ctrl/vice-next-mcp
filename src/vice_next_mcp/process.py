@@ -1,7 +1,7 @@
 """Official VICE launch, filesystem isolation, and exact-tree cleanup."""
 
 from __future__ import annotations
-import asyncio, contextlib, ctypes, hashlib, os, shutil, signal, socket, subprocess, threading, time, uuid
+import asyncio, contextlib, ctypes, hashlib, json, os, shutil, signal, socket, subprocess, tempfile, threading, time, uuid
 from collections import deque
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -33,6 +33,8 @@ class LaunchError(RuntimeError):
 class Reservation:
     port: int
     sock: socket.socket
+    lease_path: Path
+    token: str
 
     def handoff(self):
         with contextlib.suppress(OSError):
@@ -40,10 +42,52 @@ class Reservation:
 
 
 class PortAllocator:
-    def __init__(self, host="127.0.0.1"):
+    def __init__(self, host="127.0.0.1", lease_root=None):
         self.host = host
         self._lock = threading.RLock()
         self._claims = set()
+        self.lease_root = Path(
+            lease_root or Path(tempfile.gettempdir()) / "vice-next-mcp-port-leases"
+        )
+        self.lease_root.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _pid_alive(pid):
+        if pid <= 0:
+            return False
+        if os.name == "nt":
+            handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+            if handle:
+                ctypes.windll.kernel32.CloseHandle(handle)
+                return True
+            return False
+        try:
+            os.kill(pid, 0)
+        except (OSError, ProcessLookupError):
+            return False
+        return True
+
+    def _claim_file(self, port):
+        path = self.lease_root / f"{self.host.replace(':', '_')}-{port}.json"
+        token = uuid.uuid4().hex
+        payload = json.dumps({"pid": os.getpid(), "token": token, "port": port})
+        for _ in range(2):
+            try:
+                fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            except FileExistsError:
+                try:
+                    owner = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    owner = {"pid": -1}
+                if self._pid_alive(int(owner.get("pid", -1))):
+                    return None
+                with contextlib.suppress(OSError):
+                    path.unlink()
+                continue
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                stream.write(payload)
+            return path, token
+        return None
 
     def reserve(self, preferred=0):
         with self._lock:
@@ -57,8 +101,12 @@ class PortAllocator:
                     if port in self._claims:
                         sock.close()
                         continue
+                    lease = self._claim_file(port)
+                    if lease is None:
+                        sock.close()
+                        continue
                     self._claims.add(port)
-                    return Reservation(port, sock)
+                    return Reservation(port, sock, lease[0], lease[1])
                 except OSError:
                     sock.close()
         raise LaunchError("no free loopback port", details={"preferred": preferred})
@@ -67,6 +115,12 @@ class PortAllocator:
         with self._lock:
             item.handoff()
             self._claims.discard(item.port)
+            try:
+                owner = json.loads(item.lease_path.read_text(encoding="utf-8"))
+                if owner.get("token") == item.token:
+                    item.lease_path.unlink()
+            except (OSError, ValueError):
+                pass
 
     def is_claimed(self, port):
         with self._lock:
@@ -82,11 +136,25 @@ class InstancePaths:
     traces: Path
     screenshots: Path
     crashes: Path
+    snapshots: Path
+    temp: Path
 
     @classmethod
     def create(cls, base, instance_id, generation):
         root = Path(base).resolve() / instance_id / f"generation-{generation}"
-        dirs = [root / x for x in ("config", "media", "logs", "traces", "screenshots", "crashes")]
+        dirs = [
+            root / x
+            for x in (
+                "config",
+                "media",
+                "logs",
+                "traces",
+                "screenshots",
+                "crashes",
+                "snapshots",
+                "temp",
+            )
+        ]
         for p in dirs:
             p.mkdir(parents=True, exist_ok=False)
         return cls(root, *dirs)
