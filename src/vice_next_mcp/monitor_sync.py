@@ -192,14 +192,16 @@ class BinaryMonitor:
         self.call(0x72, bytes((len(data),)) + data)
 
     def keyboard_matrix(self, row: int, column: int, pressed: bool):
-        """Set one native VICE keyboard-matrix cell (monitor command $74)."""
-        if not -5 <= int(row) <= 15 or not 0 <= int(column) <= 7:
-            raise ValueError("keyboard matrix coordinates out of range")
-        self.call(0x74, struct.pack("<bBB", int(row), int(column), int(bool(pressed))))
+        """Reject matrix injection until it has a command distinct from RESTORE."""
+        del row, column, pressed
+        raise RuntimeError("instrumented VICE has no keyboard-matrix command")
 
     def keyboard_restore(self, pressed: bool) -> None:
-        """Assert or release RESTORE through its native matrix pseudo-cell."""
-        self.keyboard_matrix(-3, 0, pressed)
+        """Assert or release RESTORE and require effect acknowledgement."""
+        requested = bytes((int(bool(pressed)),))
+        response = self.call(0x74, requested)
+        if response.body != requested:
+            raise RuntimeError("VICE did not acknowledge the requested RESTORE state")
 
     def screenshot_png(self, path: str | Path, *, include_border: bool = True) -> Path:
         """Capture VICE's indexed display and encode it as a portable PNG."""

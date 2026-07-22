@@ -182,7 +182,7 @@ class Supervisor:
         # stock VICE conservative so callers receive a structured
         # unsupported-capability error instead of a misleading fallback.
         if os.environ.get("VICE_MCP_INSTRUMENTED") == "1":
-            supported |= instrumented
+            supported |= instrumented - {"vice.keyboard.matrix"}
         inst = Instance(
             ident,
             gen,
