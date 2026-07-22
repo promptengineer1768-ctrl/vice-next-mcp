@@ -115,10 +115,16 @@ class IECTraceReader:
         if sequence is not None:
             result["sequence"] = sequence
         result["host_cycle"] = result.get("clock")
-        result["drive_cycles_available"] = any(
-            isinstance(item, dict) and item.get("cycle") is not None
+        result["host_drive_cycles"] = [
+            {
+                "unit": item.get("unit"),
+                "host_cycle": result["host_cycle"],
+                "drive_cycle": item["cycle"],
+            }
             for item in result.get("drive_context", [])
-        )
+            if isinstance(item, dict) and item.get("cycle") is not None
+        ]
+        result["drive_cycles_available"] = bool(result["host_drive_cycles"])
         return result
 
     @staticmethod
