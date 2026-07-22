@@ -163,6 +163,28 @@ add(
     "event",
 )
 add(
+    "vice.iec.capture.start",
+    "Start a logical capture window on the per-instance instrumented IEC recorder",
+    closed([], {}),
+    True,
+    "event",
+)
+for action in ("read", "stop"):
+    add(
+        f"vice.iec.capture.{action}",
+        f"{action.title()} cycle-stamped IEC events",
+        closed([], {"limit": {"type": "integer", "minimum": 1, "maximum": 100000}}),
+        action == "stop",
+        "event",
+    )
+add(
+    "vice.iec.capture.status",
+    "Read IEC capture completeness and parser status",
+    closed([], {}),
+    False,
+    "reply",
+)
+add(
     "vice.c128.timing.sample",
     "Read cycle/raster timing sample (instrumented C128 VICE)",
     closed([], {}),

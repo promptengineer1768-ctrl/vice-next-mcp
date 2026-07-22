@@ -1,10 +1,11 @@
 from __future__ import annotations
-import os, socket, struct, subprocess, tempfile, threading, time, uuid
+import contextlib, os, socket, struct, subprocess, tempfile, threading, time, uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from .monitor_sync import BinaryMonitor
 from .catalog import OPS
+from .process import PortAllocator, Reservation
 
 
 class InstanceState(str, Enum):
@@ -24,6 +25,8 @@ class Instance:
     monitor: BinaryMonitor | None
     state: InstanceState = InstanceState.STARTING
     lease_token: str | None = None
+    port_reservation: Reservation | None = None
+    iec_trace_path: Path | None = None
     created: float = field(default_factory=time.time)
     capabilities: set[str] = field(
         default_factory=lambda: {"memory.read", "memory.write", "run", "pause", "reset", "snapshot"}
@@ -62,6 +65,7 @@ class Supervisor:
         startup_timeout=8.0,
         workdir=None,
         headless=True,
+        artifact_root=None,
     ):
         self.executable = executable
         self.monitor_host = monitor_host
@@ -69,17 +73,15 @@ class Supervisor:
         self.startup_timeout = startup_timeout
         self.workdir = workdir
         self.headless = headless
+        self.artifact_root = Path(
+            artifact_root or Path(tempfile.gettempdir()) / "vice-next-mcp-artifacts"
+        )
+        self._allocator = PortAllocator(monitor_host)
         self._instances = {}
         self._lock = threading.RLock()
 
     def _port(self):
-        if self.monitor_port:
-            return self.monitor_port
-        s = socket.socket()
-        s.bind((self.monitor_host, 0))
-        p = s.getsockname()[1]
-        s.close()
-        return p
+        return self._allocator.reserve(self.monitor_port)
 
     def create(
         self,
@@ -93,7 +95,8 @@ class Supervisor:
         headless=None,
     ):
         exe = executable or self.executable or machine
-        port = self._port()
+        reservation = self._port()
+        port = reservation.port
         ident = instance_id or str(uuid.uuid4())
         gen = generation
         # Official VICE accepts the version-2 monitor endpoint as a single URI;
@@ -117,11 +120,18 @@ class Supervisor:
             "-console",
         ] + list(extra_args)
         env = os.environ.copy()
+        trace_path = None
+        if os.environ.get("VICE_MCP_INSTRUMENTED") == "1":
+            trace_dir = self.artifact_root / ident / f"generation-{gen}" / "traces"
+            trace_dir.mkdir(parents=True, exist_ok=True)
+            trace_path = trace_dir / "iec.jsonl"
+            env["VICE_IEC_TRACE_FILE"] = str(trace_path)
         if use_headless:
             # SDL's dummy video backend prevents emulator windows from being
             # created while retaining the monitor and emulation core.
             env.setdefault("SDL_VIDEODRIVER", "dummy")
         try:
+            reservation.handoff()
             proc = subprocess.Popen(
                 args,
                 cwd=self.workdir or None,
@@ -130,6 +140,7 @@ class Supervisor:
                 stderr=subprocess.DEVNULL,
             )
         except OSError:
+            self._allocator.release(reservation)
             inst = Instance(ident, gen, machine, None, None, InstanceState.FAILED)
             self._instances[ident] = inst
             raise
@@ -146,15 +157,32 @@ class Supervisor:
                 time.sleep(0.05)
         if mon is None:
             proc.terminate()
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                proc.wait(2)
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait(2)
+            self._allocator.release(reservation)
             inst = Instance(ident, gen, machine, proc, None, InstanceState.FAILED)
             self._instances[ident] = inst
             raise TimeoutError("VICE monitor did not start")
-        supported = set(OPS) - {"vice.keyboard.matrix", "vice.keyboard.restore"}
+        instrumented = {
+            "vice.keyboard.matrix",
+            "vice.keyboard.restore",
+            "vice.iec.observe",
+            "vice.iec.capture.start",
+            "vice.iec.capture.read",
+            "vice.iec.capture.stop",
+            "vice.iec.capture.status",
+            "vice.c128.timing.sample",
+            "vice.vdc.timing.sample",
+        }
+        supported = set(OPS) - instrumented
         # Instrumented VICE builds advertise the extension explicitly.  Keep
         # stock VICE conservative so callers receive a structured
         # unsupported-capability error instead of a misleading fallback.
         if os.environ.get("VICE_MCP_INSTRUMENTED") == "1":
-            supported |= {"vice.keyboard.matrix", "vice.keyboard.restore"}
+            supported |= instrumented - {"vice.keyboard.matrix"}
         inst = Instance(
             ident,
             gen,
@@ -162,6 +190,8 @@ class Supervisor:
             proc,
             mon,
             InstanceState.RUNNING,
+            port_reservation=reservation,
+            iec_trace_path=trace_path,
             capabilities=supported
             | {"memory.read", "memory.write", "run", "pause", "reset", "snapshot", "keyboard.feed"},
         )
@@ -223,11 +253,24 @@ class Supervisor:
             except Exception:
                 pass
         if i.process and i.process.poll() is None:
-            i.process.terminate()
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill", "/PID", str(i.process.pid), "/T", "/F"],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                )
+            else:
+                i.process.terminate()
             try:
                 i.process.wait(2)
             except subprocess.TimeoutExpired:
                 i.process.kill()
+                i.process.wait(2)
+        if i.port_reservation is not None:
+            self._allocator.release(i.port_reservation)
+            i.port_reservation = None
         i.state = InstanceState.STOPPED
 
     def restart(self, instance_id):

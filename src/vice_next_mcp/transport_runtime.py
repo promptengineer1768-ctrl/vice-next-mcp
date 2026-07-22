@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from .supervisor import Supervisor, InstanceLease
+from .iec_capture import IECTraceReader
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,7 @@ class OperationEvidence:
 class BinaryMonitorTransport:
     def __init__(self, supervisor: Supervisor):
         self.supervisor = supervisor
+        self.iec = IECTraceReader()
 
     @staticmethod
     def _memspace(value):
@@ -64,7 +66,17 @@ class BinaryMonitorTransport:
             result = m.dump(params["path"])
         elif operation == "snapshot.load":
             result = m.undump(params["path"])
-        elif operation in {"iec.observe", "c128.timing.sample"}:
+        elif operation == "iec.observe":
+            result = self.iec.observe(i)
+        elif operation == "iec.capture.start":
+            result = self.iec.start(i)
+        elif operation == "iec.capture.read":
+            result = self.iec.read(i, limit=int(params.get("limit", 1000)))
+        elif operation == "iec.capture.stop":
+            result = self.iec.stop(i, limit=int(params.get("limit", 10000)))
+        elif operation == "iec.capture.status":
+            result = self.iec.status(i)
+        elif operation == "c128.timing.sample":
             raise RuntimeError(
                 "instrumented VICE event bridge is not connected to this monitor session"
             )

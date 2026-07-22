@@ -49,9 +49,38 @@ Use `VICE_MCP_BASE_PORT=0` (or omit `--base-port`) for ephemeral ports. Each
 case receives a stable id, a fresh artifact directory and a serial reproduction
 hint in `results.json`.
 
+### Parallel-session isolation
+
+Each launch reserves its native-monitor port with both an exclusive loopback
+socket and a cross-process lease file. The socket is handed off immediately
+before VICE starts; the lease remains until teardown, preventing independent
+pytest workers and MCP servers from selecting the same port. Stale leases from
+dead owners are reclaimed automatically.
+
+Mutable disk/tape media is copied into a generation-specific directory. Config,
+logs, traces, screenshots, crash evidence, snapshots, and temporary files also
+live beneath that generation root. Teardown stops the owned VICE process tree,
+drains log pumps, and releases only the caller's token-matched port lease.
+
 Experimental replacement for the embedded VICE MCP build. This project keeps the
 existing `vice-mcp` installation untouched and uses VICE's version-2 binary monitor
 as the control boundary.
+
+### Instrumented IEC capture
+
+Set `VICE_MCP_INSTRUMENTED=1` and launch an instrumented VICE build. Each instance
+receives a unique `VICE_IEC_TRACE_FILE` beneath its generation artifact directory.
+Use `vice.iec.capture.start`, `read`, `status`, and `stop` to consume an isolated
+logical window of resolved, cycle-stamped bus events. Results add a monotonic
+sequence, normalize VICE's `clock` as `host_cycle`, report malformed/partial records,
+and state whether drive-cycle stamps are actually present. `vice.iec.observe` returns
+the newest complete recorder event without opening a capture window.
+
+The current VICE recorder writes directly rather than through a bounded ring, so it
+does not expose an overflow counter; responses report
+`source_overflow_supported=false` instead of making a completeness claim that the
+source cannot prove. Current recorder records contain host cycles and drive CPU
+context, but no drive CPU cycle counter (`drive_cycles_available=false`).
 
 ## Evidence for the replacement
 

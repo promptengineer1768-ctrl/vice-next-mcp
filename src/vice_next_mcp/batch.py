@@ -6,9 +6,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any, Callable, Iterable
+from .process import PortAllocator, Reservation
 
 _PORT_LOCK = threading.Lock()
 _RESERVED_PORTS: set[int] = set()
+_ALLOCATOR = PortAllocator()
+_RESERVATIONS: dict[int, Reservation] = {}
 
 
 def case_id(case: dict[str, Any]) -> str:
@@ -29,43 +32,47 @@ def allocate_ports(base: int | None, count: int, occupied: Iterable[int] = ()) -
     with _PORT_LOCK:
         used = set(occupied) | _RESERVED_PORTS
         out = []
-        sockets = []
         try:
             for i in range(count):
                 preferred = (base + i) if base else 0
                 for p in range(preferred, 65536) if preferred else [0]:
-                    s = socket.socket()
-                    (
-                        s.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
-                        if os.name == "nt"
-                        else None
-                    )
                     try:
-                        s.bind(("127.0.0.1", p))
-                        actual = s.getsockname()[1]
-                    except OSError:
-                        s.close()
+                        reservation = _ALLOCATOR.reserve(p)
+                        actual = reservation.port
+                    except (OSError, RuntimeError):
                         continue
                     if actual in used:
-                        s.close()
+                        _ALLOCATOR.release(reservation)
                         continue
                     used.add(actual)
                     out.append(actual)
-                    sockets.append(s)
+                    _RESERVATIONS[actual] = reservation
                     break
                 else:
                     raise RuntimeError("no free ports")
             _RESERVED_PORTS.update(out)
             return out
-        finally:
-            for s in sockets:
-                s.close()
+        except BaseException:
+            release_ports(out)
+            raise
 
 
 def release_ports(ports: Iterable[int]) -> None:
     with _PORT_LOCK:
         for port in ports:
             _RESERVED_PORTS.discard(int(port))
+            reservation = _RESERVATIONS.pop(int(port), None)
+            if reservation is not None:
+                _ALLOCATOR.release(reservation)
+
+
+def handoff_port(port: int) -> None:
+    """Close the reservation socket while retaining the cross-process lease."""
+    with _PORT_LOCK:
+        reservation = _RESERVATIONS.get(int(port))
+        if reservation is None:
+            raise RuntimeError(f"port {port} is not reserved")
+        reservation.handoff()
 
 
 @dataclass
@@ -129,6 +136,7 @@ class BatchRunner:
                     f"pytest -n 0 {c.get('nodeid','')}",
                 )
             try:
+                handoff_port(ports[index])
                 extra = execute(c, d, ports[index])
                 prov.update(extra or {})
                 return CaseResult(
