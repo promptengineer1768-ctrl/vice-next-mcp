@@ -119,13 +119,7 @@ class BinaryMonitorTransport:
     def keyboard_matrix(
         self, instance_id: str, *, row: int, column: int, action: str = "press", frames: int = 1
     ):
-        """Reject unsupported native matrix injection without false evidence.
-
-        VICE's upstream binary monitor protocol defines ``0x72`` (keyboard
-        feed), but no row/column matrix command.  Until a native event backend
-        is selected, fail explicitly so callers cannot mistake text-buffer
-        delivery for matrix validation.
-        """
+        """Set a physical cell through the instrumented VICE monitor."""
         if not 0 <= int(row) <= 7 or not 0 <= int(column) <= 7:
             raise ValueError("matrix row and column must be in 0..7")
         if action not in {"press", "release", "hold"}:

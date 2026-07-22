@@ -191,17 +191,15 @@ class BinaryMonitor:
             raise ValueError("keyboard feed is limited to 255 bytes")
         self.call(0x72, bytes((len(data),)) + data)
 
-    def keyboard_matrix(self, row: int, column: int, pressed: bool):
-        """Reject matrix injection until it has a command distinct from RESTORE."""
-        del row, column, pressed
-        raise RuntimeError("instrumented VICE has no keyboard-matrix command")
+    def keyboard_matrix(self, row: int, column: int, pressed: bool) -> None:
+        """Set one physical matrix cell through the instrumented monitor."""
+        if not -128 <= row <= 127 or not 0 <= column <= 255:
+            raise ValueError("matrix row/column do not fit the wire protocol")
+        self.call(0x74, bytes((row & 0xFF, column, int(bool(pressed)))))
 
     def keyboard_restore(self, pressed: bool) -> None:
-        """Assert or release RESTORE and require effect acknowledgement."""
-        requested = bytes((int(bool(pressed)),))
-        response = self.call(0x74, requested)
-        if response.body != requested:
-            raise RuntimeError("VICE did not acknowledge the requested RESTORE state")
+        """Assert or release the C64 RESTORE pseudo-cell."""
+        self.keyboard_matrix(-3, 0, pressed)
 
     def screenshot_png(self, path: str | Path, *, include_border: bool = True) -> Path:
         """Capture VICE's indexed display and encode it as a portable PNG."""

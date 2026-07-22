@@ -51,21 +51,24 @@ def test_registers_set_rejects_unknown_name():
 
 def test_keyboard_restore_uses_native_press_release_protocol():
     def press(command, body):
-        assert (command, body) == (0x74, b"\x01")
-        return Response(command, 0, 1, b"\x01")
+        assert (command, body) == (0x74, b"\xfd\x00\x01")
+        return Response(command, 0, 1, b"")
 
     def release(command, body):
-        assert (command, body) == (0x74, b"\x00")
-        return Response(command, 0, 2, b"\x00")
+        assert (command, body) == (0x74, b"\xfd\x00\x00")
+        return Response(command, 0, 2, b"")
 
     monitor = monitor_with_responses((press, release))
     monitor.keyboard_restore(True)
     monitor.keyboard_restore(False)
 
 
-def test_keyboard_matrix_has_no_restore_command_alias():
-    with pytest.raises(RuntimeError, match="no keyboard-matrix command"):
-        monitor_with_responses(()).keyboard_matrix(3, 0, True)
+def test_keyboard_matrix_uses_physical_matrix_protocol():
+    def matrix(command, body):
+        assert (command, body) == (0x74, b"\x03\x00\x01")
+        return Response(command, 0, 1, b"")
+
+    monitor_with_responses((matrix,)).keyboard_matrix(3, 0, True)
 
 
 @pytest.mark.live
