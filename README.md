@@ -5,8 +5,11 @@ instrumented-capability rules. This project is GPLv2-or-later; see
 [`COPYING`](COPYING).
 
 Keyboard matrix injection covers C64/C128, VIC-20, Plus/4/C16, PET, CBM-II,
-CBM 5x0, C64DTV, and SCPU64 targets. IEC observers cover C64, C64DTV, Plus/4,
-and VIC-20; PET is explicitly excluded.
+CBM 5x0, C64DTV, and SCPU64 targets. The VICE recorder is implemented for C64,
+C128, C64DTV, Plus/4, and VIC-20; PET is explicitly excluded. MCP currently
+launches and validates C64 and C128 machine classes. C128/x128 IEC capture is
+experimentally validated with host and drive cycle pairs, while the other
+recorder-enabled classes still require equivalent MCP-level validation gates.
 
 > Experimental Wave 2 transport and MCP schema with supervised lifecycle and
 > batch execution. Hardware/protocol evidence remains separately gated.
@@ -80,8 +83,14 @@ the newest complete recorder event without opening a capture window.
 The current VICE recorder writes directly rather than through a bounded ring, so it
 does not expose an overflow counter; responses report
 `source_overflow_supported=false` instead of making a completeness claim that the
-source cannot prove. Recorder builds at `vice-instrumentation` commit `ec86e99` or
+source cannot prove. Recorder builds at `vice-instrumented` commit `ec86e99` or
 later contain both host and drive CPU counters (`drive_cycles_available=true`).
+
+Support is deliberately reported in three layers: recorder availability in VICE,
+machine classes accepted by MCP, and machine classes with completed live evidence.
+At present x64sc and x128 are MCP-supported, and x128 has experimental recorder
+evidence with populated host/drive clocks; this is not a blanket validation claim
+for every C128 peripheral or timing mode.
 
 ## Evidence for the replacement
 

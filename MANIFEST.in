@@ -1,0 +1,5 @@
+include COPYING MANUAL.md README.md
+recursive-include docs *.md *.json
+recursive-include examples *.py *.json
+recursive-include validation *.py *.json
+recursive-include tests *.py
