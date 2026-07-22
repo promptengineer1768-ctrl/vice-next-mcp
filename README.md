@@ -66,6 +66,22 @@ Experimental replacement for the embedded VICE MCP build. This project keeps the
 existing `vice-mcp` installation untouched and uses VICE's version-2 binary monitor
 as the control boundary.
 
+### Instrumented IEC capture
+
+Set `VICE_MCP_INSTRUMENTED=1` and launch an instrumented VICE build. Each instance
+receives a unique `VICE_IEC_TRACE_FILE` beneath its generation artifact directory.
+Use `vice.iec.capture.start`, `read`, `status`, and `stop` to consume an isolated
+logical window of resolved, cycle-stamped bus events. Results add a monotonic
+sequence, normalize VICE's `clock` as `host_cycle`, report malformed/partial records,
+and state whether drive-cycle stamps are actually present. `vice.iec.observe` returns
+the newest complete recorder event without opening a capture window.
+
+The current VICE recorder writes directly rather than through a bounded ring, so it
+does not expose an overflow counter; responses report
+`source_overflow_supported=false` instead of making a completeness claim that the
+source cannot prove. Current recorder records contain host cycles and drive CPU
+context, but no drive CPU cycle counter (`drive_cycles_available=false`).
+
 ## Evidence for the replacement
 
 - Official SDL2 VICE 3.10 completed 1,000 native-monitor transactions with no
