@@ -173,14 +173,20 @@ for action in ("read", "stop"):
     add(
         f"vice.iec.capture.{action}",
         f"{action.title()} cycle-stamped IEC events",
-        closed([], {"limit": {"type": "integer", "minimum": 1, "maximum": 100000}}),
+        closed(
+            [],
+            {
+                "capture_id": {"type": "string", "minLength": 1},
+                "limit": {"type": "integer", "minimum": 1, "maximum": 100000},
+            },
+        ),
         action == "stop",
         "event",
     )
 add(
     "vice.iec.capture.status",
     "Read IEC capture completeness and parser status",
-    closed([], {}),
+    closed([], {"capture_id": {"type": "string", "minLength": 1}}),
     False,
     "reply",
 )

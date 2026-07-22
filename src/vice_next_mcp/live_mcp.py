@@ -5,6 +5,7 @@ import asyncio
 from typing import Any
 
 from .model import Instance as McpInstance
+from .errors import ViceError
 from .server import McpServer
 from .supervisor import Supervisor
 from .transport_runtime import BinaryMonitorTransport
@@ -13,6 +14,10 @@ from .transport_runtime import BinaryMonitorTransport
 class SupervisorResolver:
     def __init__(self, supervisor: Supervisor):
         self.supervisor = supervisor
+        # Capture lifecycle state belongs to the live supervisor, not to one
+        # JSON-RPC request. Reuse the runtime so start/read/status/stop observe
+        # the same per-instance IECTraceReader sessions.
+        self.runtime = BinaryMonitorTransport(supervisor)
 
     async def resolve(self, target: dict[str, Any]) -> McpInstance:
         item = self.supervisor.get(target.get("instance_id"))
@@ -28,13 +33,13 @@ class SupervisorResolver:
             lifecycle=item.state.value,
             execution_state="running" if item.state.value == "running" else item.state.value,
             capabilities=set(item.capabilities),
-            transport=SupervisorTransport(self.supervisor, item.id),
+            transport=SupervisorTransport(self.runtime, item.id),
         )
 
 
 class SupervisorTransport:
-    def __init__(self, supervisor: Supervisor, instance_id: str):
-        self.runtime = BinaryMonitorTransport(supervisor)
+    def __init__(self, runtime: BinaryMonitorTransport, instance_id: str):
+        self.runtime = runtime
         self.instance_id = instance_id
 
     async def execute(self, operation, arguments, *, operation_id, deadline_ms, cancel, progress):
@@ -61,9 +66,23 @@ class SupervisorTransport:
                 self.runtime.keyboard_restore, self.instance_id, action=arguments["action"]
             )
         else:
-            result = await asyncio.to_thread(
-                self.runtime.execute, self.instance_id, runtime_operation, **arguments
-            )
+            try:
+                result = await asyncio.to_thread(
+                    self.runtime.execute, self.instance_id, runtime_operation, **arguments
+                )
+            except RuntimeError as error:
+                message = str(error)
+                if "not launched with instrumented IEC" in message:
+                    raise ViceError("UNSUPPORTED_COMMAND", message) from error
+                if (
+                    "already active" in message
+                    or "no IEC capture has been started" in message
+                    or "capture ID does not match" in message
+                ):
+                    raise ViceError("STATE_CONFLICT", message) from error
+                if "instrumented IEC trace" in message:
+                    raise ViceError("VERIFICATION_FAILED", message) from error
+                raise
         value = result["result"]
         if isinstance(value, (bytes, bytearray)):
             value = list(value)

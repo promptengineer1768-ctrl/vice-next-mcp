@@ -8,7 +8,7 @@ from vice_next_mcp.iec_capture import IECTraceReader
 
 
 def instance(path: Path):
-    return SimpleNamespace(id="instance-1", iec_trace_path=path)
+    return SimpleNamespace(id="instance-1", generation=1, iec_trace_path=path)
 
 
 def write_event(path: Path, clock: int, *, partial=False):
@@ -64,4 +64,4 @@ def test_partial_record_is_not_claimed_complete(tmp_path):
 
 def test_capture_rejects_uninstrumented_instance():
     with pytest.raises(RuntimeError, match="not launched"):
-        IECTraceReader().start(SimpleNamespace(id="stock", iec_trace_path=None))
+        IECTraceReader().start(SimpleNamespace(id="stock", generation=1, iec_trace_path=None))

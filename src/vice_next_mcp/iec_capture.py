@@ -24,8 +24,12 @@ class IECTraceReader:
     """Own logical capture windows over a recorder opened when VICE starts."""
 
     def __init__(self):
-        self._sessions: dict[str, CaptureSession] = {}
+        self._sessions: dict[tuple[str, int], CaptureSession] = {}
         self._lock = threading.RLock()
+
+    @staticmethod
+    def _key(instance) -> tuple[str, int]:
+        return instance.id, int(instance.generation)
 
     def start(self, instance) -> dict:
         path = getattr(instance, "iec_trace_path", None)
@@ -35,16 +39,17 @@ class IECTraceReader:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch(exist_ok=True)
         with self._lock:
-            previous = self._sessions.get(instance.id)
+            key = self._key(instance)
+            previous = self._sessions.get(key)
             if previous and previous.active:
                 raise RuntimeError("an IEC capture is already active for this instance")
             session = CaptureSession(uuid.uuid4().hex, path, path.stat().st_size)
-            self._sessions[instance.id] = session
+            self._sessions[key] = session
             return self._status(session)
 
-    def read(self, instance, *, limit: int = 1000) -> dict:
+    def read(self, instance, *, limit: int = 1000, capture_id: str | None = None) -> dict:
         with self._lock:
-            session = self._session(instance)
+            session = self._session(instance, capture_id)
             events = self._drain(session, limit)
             return {**self._status(session), "events": events}
 
@@ -63,21 +68,23 @@ class IECTraceReader:
             raise RuntimeError("instrumented IEC trace contains no complete event")
         return self._normalize(last, None)
 
-    def stop(self, instance, *, limit: int = 10000) -> dict:
+    def stop(self, instance, *, limit: int = 10000, capture_id: str | None = None) -> dict:
         with self._lock:
-            session = self._session(instance)
+            session = self._session(instance, capture_id)
             events = self._drain(session, limit)
             session.active = False
             return {**self._status(session), "events": events}
 
-    def status(self, instance) -> dict:
+    def status(self, instance, *, capture_id: str | None = None) -> dict:
         with self._lock:
-            return self._status(self._session(instance))
+            return self._status(self._session(instance, capture_id))
 
-    def _session(self, instance) -> CaptureSession:
-        session = self._sessions.get(instance.id)
+    def _session(self, instance, capture_id: str | None = None) -> CaptureSession:
+        session = self._sessions.get(self._key(instance))
         if session is None:
             raise RuntimeError("no IEC capture has been started for this instance")
+        if capture_id is not None and capture_id != session.capture_id:
+            raise RuntimeError("IEC capture ID does not match the active session")
         return session
 
     def _drain(self, session: CaptureSession, limit: int) -> list[dict]:

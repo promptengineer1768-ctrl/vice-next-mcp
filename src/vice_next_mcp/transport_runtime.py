@@ -71,11 +71,15 @@ class BinaryMonitorTransport:
         elif operation == "iec.capture.start":
             result = self.iec.start(i)
         elif operation == "iec.capture.read":
-            result = self.iec.read(i, limit=int(params.get("limit", 1000)))
+            result = self.iec.read(
+                i, limit=int(params.get("limit", 1000)), capture_id=params.get("capture_id")
+            )
         elif operation == "iec.capture.stop":
-            result = self.iec.stop(i, limit=int(params.get("limit", 10000)))
+            result = self.iec.stop(
+                i, limit=int(params.get("limit", 10000)), capture_id=params.get("capture_id")
+            )
         elif operation == "iec.capture.status":
-            result = self.iec.status(i)
+            result = self.iec.status(i, capture_id=params.get("capture_id"))
         elif operation == "c128.timing.sample":
             raise RuntimeError(
                 "instrumented VICE event bridge is not connected to this monitor session"
